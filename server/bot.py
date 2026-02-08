@@ -7,8 +7,7 @@ from app import app
 import os
 
 # Replace with your actual bot token
-# BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'
-BOT_TOKEN='7963672699:AAH8Xrv5yotfHomAyd6GoV1hQ83XMq_jCQ4'
+BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'
 AUTHORIZED_USER_ID = 6830221233
 
 def handle(msg):
