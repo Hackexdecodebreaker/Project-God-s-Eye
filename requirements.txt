@@ -1,0 +1,10 @@
+Flask
+Flask-SQLAlchemy
+telepot
+requests
+psutil
+mss
+Pillow
+opencv-python
+gunicorn
+pyinstaller
