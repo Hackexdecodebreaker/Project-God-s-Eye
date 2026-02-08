@@ -9,11 +9,23 @@ import os
 # Replace with your actual bot token
 # BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'
 BOT_TOKEN='7963672699:AAH8Xrv5yotfHomAyd6GoV1hQ83XMq_jCQ4'
+AUTHORIZED_USER_ID = 6830221233
 
 def handle(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
-    
-    if content_type == 'text':
+    user_id = msg['from']['id']
+
+    if user_id != AUTHORIZED_USER_ID:
+        warning_msg = (
+            "🚨 **UNAUTHORIZED ACCESS DETECTED** 🚨\n\n"
+            "ERROR: IDENTITY VERIFICATION FAILED.\n"
+            "THIS INCIDENT HAS BEEN LOGGED AND REPORTED TO SYSTEM ADMINISTRATORS.\n\n"
+            "**WARNING:** Continued attempts to breach this system will result in forensic retaliation.\n\n"
+            "TERMINATING CONNECTION..."
+        )
+        bot.sendMessage(chat_id, warning_msg, parse_mode='Markdown')
+        print(f"Intrusion attempt from User ID: {user_id}")
+        return
         # command = msg['text'].split()
         # cmd = command[0]
         text = msg['text']

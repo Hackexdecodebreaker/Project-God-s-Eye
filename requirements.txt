@@ -8,3 +8,5 @@ Pillow
 opencv-python
 gunicorn
 pyinstaller
+pyautogui
+Flask-Login

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOD'S EYE // IDENTITY REGISTRATION</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-bg: rgba(10, 15, 20, 0.95);
+            --neon-green: #39ff14;
+            --neon-cyan: #00f3ff;
+            --alert-red: #ff3333;
+            --warning-amber: #ffbf00;
+            --grid-line: rgba(0, 243, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--neon-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .login-panel {
+            width: 400px;
+            background: var(--panel-bg);
+            border: 1px solid var(--neon-cyan);
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+            z-index: 3;
+        }
+
+        .login-panel::before,
+        .login-panel::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border: 2px solid var(--neon-cyan);
+        }
+
+        .login-panel::before {
+            top: -2px;
+            left: -2px;
+            border-right: 0;
+            border-bottom: 0;
+        }
+
+        .login-panel::after {
+            bottom: -2px;
+            right: -2px;
+            border-left: 0;
+            border-top: 0;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: rgba(0, 243, 255, 0.7);
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-green);
+            padding: 10px;
+            font-family: 'Share Tech Mono';
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus {
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 12px;
+            cursor: pointer;
+            font-family: 'Orbitron';
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        .alert {
+            border: 1px solid var(--warning-amber);
+            color: var(--warning-amber);
+            padding: 10px;
+            font-size: 12px;
+            margin-bottom: 20px;
+            background: rgba(255, 191, 0, 0.1);
+            text-align: center;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        .login-link a {
+            color: var(--neon-green);
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-panel">
+        <h1>// IDENTITY_LOG_PROTO</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert"
+            style="border-color: var(--{% if category == 'warning' %}warning-amber{% else %}neon-green{% endif %}); color: var(--{% if category == 'warning' %}warning-amber{% else %}neon-green{% endif %}); background: rgba(0,0,0,0.3);">
+            {{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="input-group">
+                <label>NEW_OPERATOR_ID</label>
+                <input type="text" name="username" required autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>SECURE_ACCESS_KEY</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit" class="btn">ARCHIVE_IDENTITY</button>
+        </form>
+
+        <div class="login-link">
+            ALREADY ARCHIVED? <a href="{{ url_for('login') }}">RETURN_TO_CORE</a>
+        </div>
+    </div>
+</body>
+
+</html>

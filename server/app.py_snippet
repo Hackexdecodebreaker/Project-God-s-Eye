@@ -1,0 +1,24 @@
+# Additional Global Variable for Input Event Queue
+# Using a simple dict queue: {device_id: [events]}
+input_queues = {}
+
+@app.route('/api/control/input/<int:device_id>', methods=['POST'])
+def vehicle_input(device_id):
+    data = request.json
+    if device_id not in input_queues:
+        input_queues[device_id] = []
+    
+    # Limit queue size to prevent memory issues
+    if len(input_queues[device_id]) > 50:
+        input_queues[device_id].pop(0)
+
+    input_queues[device_id].append(data)
+    return jsonify({'status': 'queued'})
+
+@app.route('/api/control/pending/<int:device_id>', methods=['GET'])
+def get_pending_input(device_id):
+    if device_id in input_queues and input_queues[device_id]:
+        events = input_queues[device_id]
+        input_queues[device_id] = [] # Clear AFTER reading
+        return jsonify({'events': events})
+    return jsonify({'events': []})
