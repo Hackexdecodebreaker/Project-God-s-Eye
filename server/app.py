@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template, send_from_directory, redirect, url_for, Response, flash
-from models import db, Device, Command, User
+from .models import db, Device, Command, User
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
 import datetime
