@@ -3,7 +3,8 @@
 > **STATUS**: CLASSIFIED // TOP SECRET
 > **CODENAME**: PROJECT GODS EYE
 
-God's Eye is a powerful, sci-fi themed remote monitoring and surveillance system designed for authorized administrators to track, monitor, and control devices in real-time. It features a centralized dashboard, a Telegram command interface, and a stealthy client agent.
+God's Eye is a powerful, remote monitoring and surveillance system designed for authorized administrators to track, monitor, and control devices in real-time.It can also serve as a C2 system for cybersecurity professionals in red teaming.
+It features a centralized dashboard, a Telegram command interface, and a stealthy client agent.
 
 ---
 
